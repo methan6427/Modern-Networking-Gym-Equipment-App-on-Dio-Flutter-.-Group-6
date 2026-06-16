@@ -1,30 +1,54 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:modern_networking/main.dart';
+import 'package:modern_networking/models/exercise.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  test('Exercise.fromJson parses both singular and plural API shapes', () {
+    final singular = Exercise.fromJson({
+      'id': '1',
+      'name': 'Push Up',
+      'bodyPart': 'chest',
+      'target': 'pectorals',
+      'equipment': 'body weight',
+      'gifUrl': 'http://example.com/a.gif',
+      'instructions': ['Step 1', 'Step 2'],
+    });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    expect(singular.id, '1');
+    expect(singular.bodyPart, 'chest');
+    expect(singular.targetMuscle, 'pectorals');
+    expect(singular.instructions.length, 2);
+    expect(singular.isCustom, false);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    final plural = Exercise.fromJson({
+      'exerciseId': '2',
+      'name': 'Squat',
+      'bodyParts': ['upper legs'],
+      'targetMuscles': ['quads'],
+      'equipments': ['barbell'],
+      'gifUrl': 'http://example.com/b.gif',
+      'instructions': ['Step 1'],
+    });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(plural.id, '2');
+    expect(plural.bodyPart, 'upper legs');
+    expect(plural.equipment, 'barbell');
+  });
+
+  test('Exercise round-trips through toJson/fromJson', () {
+    const original = Exercise(
+      id: 'custom-1',
+      name: 'My Move',
+      bodyPart: 'back',
+      targetMuscle: 'lats',
+      equipment: 'cable',
+      instructions: ['Pull'],
+      gifUrl: '',
+      isCustom: true,
+    );
+
+    final restored = Exercise.fromJson(original.toJson());
+    expect(restored.name, 'My Move');
+    expect(restored.isCustom, true);
   });
 }
