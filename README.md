@@ -1,34 +1,32 @@
-# Gym Equipment Manager — Phase 2: Dio Networking Layer
+# Gym Equipment Manager — Phase 4: Full UI
 
-This folder is a **complete, runnable Flutter project** at the end of Phase 2.
-It contains everything from Phase 1 **plus** the networking layer — the core of
-the project.
+This folder is a **complete, runnable Flutter project** at the end of Phase 4 —
+the finished application. It contains everything from Phases 1–3 **plus** the UI.
 
 ## What this phase delivers
 
-| Area | File |
+| Screen / Widget | File |
 |---|---|
-| Dio client (BaseOptions, timeouts, attaches interceptors) | `lib/services/dio_client.dart` |
-| Auth interceptor (injects API key header) | `lib/services/interceptors/auth_interceptor.dart` |
-| Logging interceptor (logs every request/response) | `lib/services/interceptors/logging_interceptor.dart` |
-| Error interceptor (maps `DioException` → typed `AppException`) | `lib/services/interceptors/error_interceptor.dart` |
-| Retry interceptor (auto-retries transient failures) | `lib/services/interceptors/retry_interceptor.dart` |
-| Remote API service (5 endpoints) | `lib/services/exercise_api_service.dart` |
-| Local storage service (SharedPreferences CRUD) | `lib/services/local_storage_service.dart` |
-| Repository (single source of truth) | `lib/repositories/exercise_repository.dart` |
+| Home — searchable, refreshable list + FAB + settings | `lib/screens/home_screen.dart` |
+| Detail — full info; Edit/Delete only for custom items | `lib/screens/detail_screen.dart` |
+| Add — validated form to create a custom exercise | `lib/screens/add_screen.dart` |
+| Edit — pre-filled form to update a custom exercise | `lib/screens/edit_screen.dart` |
+| Settings — dark mode toggle | `lib/screens/settings_screen.dart` |
+| Exercise card (thumbnail, custom badge) | `lib/widgets/exercise_card.dart` |
+| Shared add/edit form | `lib/widgets/exercise_form.dart` |
+| Loading shimmer placeholder | `lib/widgets/loading_shimmer.dart` |
+| Error state with retry | `lib/widgets/error_retry.dart` |
 
-The UI is a **networking smoke-test screen**: tap "Fetch" to call the API
-through Dio and watch the interceptor logs in the debug console.
+## Features (full FR coverage)
 
-## API configuration
-
-- Data comes from the free, public **wger** workout API
-  (`https://wger.de/api/v2`) — no API key required.
-- Base URL lives in `lib/services/dio_client.dart` (`ApiConfig.baseUrl`).
-- The wger JSON is mapped into the app's `Exercise` model inside
-  `lib/services/exercise_api_service.dart` (keeps the model API-agnostic).
-- `AuthInterceptor` only attaches a header if you pass an optional token
-  (`--dart-define=API_TOKEN=...`), which is not needed for reading exercises.
+- View exercise list (remote via Dio) + custom exercises (local)
+- Exercise details
+- Live search across name / body part / equipment / target
+- Create / Update / Delete custom exercises (SharedPreferences)
+- Pull-to-refresh
+- Loading (shimmer), empty, and error (retry) states
+- Dark mode (persisted)
+- Dio networking + 4 interceptors
 
 ## How to run
 
@@ -37,8 +35,7 @@ flutter pub get
 flutter run
 ```
 
-Tap **Fetch** and check the console — you should see lines like
-`--> GET .../exercises` and `<-- 200 ... (123ms)` from the LoggingInterceptor.
+No API key is needed — the wger API is free and public for reads.
 
 ## How to verify
 
@@ -51,6 +48,7 @@ flutter test      # expect: All tests passed
 
 1. Copy this folder's contents into your local repo root (replacing files).
 2. `flutter pub get`
-3. Confirm the smoke test fetches data, then commit and push.
+3. Confirm the full app works, then commit and push.
 
-> Built on top of Phase 1. Next: Phase 3 adds state management (Provider).
+> Built on top of Phase 3. This is the complete app. The `final/` folder is an
+> identical combined copy used for end-to-end testing before pushing.
