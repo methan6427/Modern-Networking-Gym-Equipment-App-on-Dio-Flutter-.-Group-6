@@ -1,0 +1,10 @@
+﻿# Tell GitHub Linguist to ignore Flutter-generated platform folders.
+# This keeps the repo language stats focused on Dart.
+
+android/**    linguist-vendored=true
+ios/**        linguist-vendored=true
+macos/**      linguist-vendored=true
+linux/**      linguist-vendored=true
+windows/**    linguist-vendored=true
+web/**        linguist-vendored=true
+build/**      linguist-vendored=true
