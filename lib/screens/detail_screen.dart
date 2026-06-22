@@ -1,9 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/exercise.dart';
 import '../providers/exercise_provider.dart';
+import '../widgets/exercise_form.dart';
 import 'edit_screen.dart';
 
 /// Shows the full details of an exercise.
@@ -47,18 +47,14 @@ class _DetailScreenState extends State<DetailScreen> {
       body: ListView(
         children: [
           if (_exercise.gifUrl.isNotEmpty)
-            CachedNetworkImage(
-              imageUrl: _exercise.gifUrl,
+            ExerciseImageWidget(
+              gifUrl: _exercise.gifUrl,
               height: 240,
               width: double.infinity,
               fit: BoxFit.contain,
-              placeholder: (_, _) => const SizedBox(
+              errorChild: const SizedBox(
                 height: 240,
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              errorWidget: (_, _, _) => const SizedBox(
-                height: 240,
-                child: Icon(Icons.broken_image, size: 64),
+                child: Center(child: Icon(Icons.broken_image, size: 64)),
               ),
             ),
           Padding(

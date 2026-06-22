@@ -24,6 +24,9 @@ dependencies:
   # Remote image / GIF loading with caching
   cached_network_image: ^3.4.1
 
+  # Picking images from the device gallery
+  image_picker: ^1.1.2
+
   # Loading placeholders
   shimmer: ^3.0.0
 
@@ -35,3 +38,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+dependency_overrides:
+  path_provider_android: 2.2.12

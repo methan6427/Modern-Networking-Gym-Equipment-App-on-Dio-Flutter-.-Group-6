@@ -1,7 +1,7 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../models/exercise.dart';
+import 'exercise_form.dart';
 
 /// A single exercise row in the list.
 ///
@@ -68,23 +68,17 @@ class _Thumbnail extends StatelessWidget {
       child: const Icon(Icons.fitness_center),
     );
 
-    if (exercise.gifUrl.isEmpty) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: placeholder,
-      );
-    }
-
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
-      child: CachedNetworkImage(
-        imageUrl: exercise.gifUrl,
-        width: 56,
-        height: 56,
-        fit: BoxFit.cover,
-        placeholder: (_, _) => placeholder,
-        errorWidget: (_, _, _) => placeholder,
-      ),
+      child: exercise.gifUrl.isEmpty
+          ? placeholder
+          : ExerciseImageWidget(
+              gifUrl: exercise.gifUrl,
+              width: 56,
+              height: 56,
+              fit: BoxFit.cover,
+              errorChild: placeholder,
+            ),
     );
   }
 }

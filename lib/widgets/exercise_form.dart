@@ -1,4 +1,8 @@
+import 'dart:io';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../models/exercise.dart';
 
@@ -25,6 +29,7 @@ class ExerciseForm extends StatefulWidget {
 
 class _ExerciseFormState extends State<ExerciseForm> {
   final _formKey = GlobalKey<FormState>();
+  final _picker = ImagePicker();
 
   late final TextEditingController _name;
   late final TextEditingController _bodyPart;
@@ -64,6 +69,13 @@ class _ExerciseFormState extends State<ExerciseForm> {
       return 'This field is required';
     }
     return null;
+  }
+
+  Future<void> _pickFromGallery() async {
+    final picked = await _picker.pickImage(source: ImageSource.gallery);
+    if (picked != null && mounted) {
+      _gifUrl.text = picked.path;
+    }
   }
 
   Future<void> _handleSubmit() async {
@@ -113,7 +125,8 @@ class _ExerciseFormState extends State<ExerciseForm> {
             'Instructions (one step per line)',
             maxLines: 5,
           ),
-          _field(_gifUrl, 'Image/GIF URL (optional)'),
+          _urlField(),
+          _ImagePreview(controller: _gifUrl),
           const SizedBox(height: 24),
           FilledButton(
             onPressed: _submitting ? null : _handleSubmit,
@@ -144,6 +157,160 @@ class _ExerciseFormState extends State<ExerciseForm> {
         validator: validator,
         decoration: InputDecoration(labelText: label),
       ),
+    );
+  }
+
+  Widget _urlField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: TextFormField(
+            controller: _gifUrl,
+            keyboardType: TextInputType.url,
+            decoration: const InputDecoration(
+              labelText: 'Image/GIF URL (optional)',
+            ),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) return null;
+              final trimmed = value.trim();
+              if (_isNetworkUrl(trimmed)) {
+                final uri = Uri.tryParse(trimmed);
+                if (uri == null || !uri.hasAbsolutePath) {
+                  return 'Enter a valid http:// or https:// URL';
+                }
+                return null;
+              }
+              // Local file path picked from gallery
+              if (!File(trimmed).existsSync()) {
+                return 'File not found. Re-browse or enter a URL.';
+              }
+              return null;
+            },
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Row(
+            children: [
+              const Expanded(child: Divider()),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Text(
+                  'or',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+              const Expanded(child: Divider()),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: OutlinedButton.icon(
+            onPressed: _pickFromGallery,
+            icon: const Icon(Icons.photo_library_outlined),
+            label: const Text('Browse Gallery'),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+bool _isNetworkUrl(String value) =>
+    value.startsWith('http://') || value.startsWith('https://');
+
+class _ImagePreview extends StatelessWidget {
+  const _ImagePreview({required this.controller});
+
+  final TextEditingController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: controller,
+      builder: (context, value, _) {
+        final url = value.text.trim();
+        if (url.isEmpty) return const SizedBox.shrink();
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: ExerciseImageWidget(
+              gifUrl: url,
+              height: 180,
+              width: double.infinity,
+              fit: BoxFit.contain,
+              errorChild: Container(
+                height: 180,
+                color: Colors.grey.shade200,
+                child: const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.broken_image, size: 48, color: Colors.grey),
+                    SizedBox(height: 8),
+                    Text(
+                      'Could not load image — check the URL',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Displays an exercise image from either a network URL or a local file path.
+class ExerciseImageWidget extends StatelessWidget {
+  const ExerciseImageWidget({
+    super.key,
+    required this.gifUrl,
+    this.height,
+    this.width,
+    this.fit = BoxFit.cover,
+    this.errorChild,
+  });
+
+  final String gifUrl;
+  final double? height;
+  final double? width;
+  final BoxFit fit;
+  final Widget? errorChild;
+
+  @override
+  Widget build(BuildContext context) {
+    final fallback = errorChild ??
+        Container(
+          height: height,
+          width: width,
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          child: const Icon(Icons.fitness_center),
+        );
+
+    if (_isNetworkUrl(gifUrl)) {
+      return CachedNetworkImage(
+        imageUrl: gifUrl,
+        height: height,
+        width: width,
+        fit: fit,
+        placeholder: (_, _) => fallback,
+        errorWidget: (_, _, _) => fallback,
+      );
+    }
+
+    return Image.file(
+      File(gifUrl),
+      height: height,
+      width: width,
+      fit: fit,
+      errorBuilder: (_, _, _) => fallback,
     );
   }
 }
